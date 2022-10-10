@@ -36,7 +36,7 @@ class self_compose_scraping extends delegate_self_compose_scraping{
     // スクレイピングを実行
     do_scraping() {
         // スクレイピング
-        var iframe = document.createElement('iframe');
+        let iframe = document.createElement('iframe');
         do{
             const RANDOM_MAX = 10000;
             this.iframe_id = Math.floor(Math.random() * RANDOM_MAX);
@@ -46,6 +46,11 @@ class self_compose_scraping extends delegate_self_compose_scraping{
         iframe.onload = function(){
             self_compose_scraping.finish_load_iframe(my_this);
         };
+        let this_setting = my_this.scraping_settings[0];
+        iframe.src = this_setting.target_url;
+        iframe.width = 800;
+        iframe.height = 500;
+        document.body.appendChild(iframe);
     }
 
     // iframeのロードが終了したときに呼び出される
