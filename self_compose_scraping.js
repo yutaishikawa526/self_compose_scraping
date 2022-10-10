@@ -34,15 +34,18 @@ class self_compose_scraping {
             this.iframe_id = Math.floor(Math.random() * RANDOM_MAX);
         }while(document.getElementById(String(this.iframe_id)) != null);
         iframe.id = String(this.iframe_id);
-        iframe.onload = this.finish_load_iframe;
+        let my_this = this;
+        iframe.onload = function(){
+            self_compose_scraping.finish_load_iframe(my_this);
+        };
     }
 
     // iframeのロードが終了したときに呼び出される
-    finish_load_iframe(){
+    static finish_load_iframe(my_this){
         // スクレイピング設定を解析
-        let this_setting = this.scraping_settings[0];
+        let this_setting = my_this.scraping_settings[0];
 
-        let elem = document.getElementById(String(this.iframe_id));
+        let elem = document.getElementById(String(my_this.iframe_id));
         let html = elem.contentWindow.document.getElementsByTagName("html")[0].cloneNode(true);
         let name_result = get_Elemet_by_id_and_class(html,this_setting.target_name_class,this_setting.target_name_id);
         let target_result = get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
@@ -51,25 +54,25 @@ class self_compose_scraping {
             final_name = name_result[0];
         }
         for(let i=0;i<target_result.length;i++){
-            this.scraping_result.push(new self_compose_scraping_result(final_name,target_result[i]));
+            my_this.scraping_result.push(new self_compose_scraping_result(final_name,target_result[i]));
         }
 
         // スクレイピング結果とスクレイピング設定から、子要素作成
         // または、結果を返す
-        if (this.scraping_settings.length == 1) {
-            this.delegate.finish_scraping(this.scraping_result);
+        if (my_this.scraping_settings.length == 1) {
+            my_this.delegate.finish_scraping(my_this.scraping_result);
         } else {
-            let this_scraping_result = this.scraping_result.concat();
-            this.scraping_result = [];
-            this.child_result_count = 0;
-            this.child_result_max = this_scraping_result.length;
+            let this_scraping_result = my_this.scraping_result.concat();
+            my_this.scraping_result = [];
+            my_this.child_result_count = 0;
+            my_this.child_result_max = this_scraping_result.length;
             for (let i = 0; i < this_scraping_result.length; i++) {
                 let next_url = this_scraping_result[i].result;
-                let child_setting = this.scraping_settings.concat();
+                let child_setting = my_this.scraping_settings.concat();
                 child_setting.shift();
                 child_setting[0].target_url = next_url;
-                let child_scr = new self_compose_scraping(child_setting, this);
-                this.child_scraping.push(child_scr);
+                let child_scr = new self_compose_scraping(child_setting, my_this);
+                my_this.child_scraping.push(child_scr);
                 child_scr.do_scraping();
             }
         }
