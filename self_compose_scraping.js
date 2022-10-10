@@ -1,7 +1,15 @@
 
+// self_compose_scrapingのデリゲートクラス
+class delegate_self_compose_scraping {
+    // スクレイピング終了を処理するクラス
+    finish_scraping(result) { }
+}
+
 // 自身を配列として含む、スクレイピングを行うクラス
 class self_compose_scraping {
     constructor(scraping_settings, delegate) {
+        super();
+
         // スクレイピング結果を保持
         this.scraping_result = [];
 
@@ -130,12 +138,6 @@ class self_compose_scraping {
     }
 }
 
-// self_compose_scrapingのデリゲートクラス
-class delegate_self_compose_scraping {
-    // スクレイピング終了を処理するクラス
-    finish_scraping(result) { }
-}
-
 // スクレイピング設定を保持
 class self_compose_scraping_setting {
     constructor(target_url, target_class, target_id, result_attr, target_name_class, target_name_id, result_name_attr) {
@@ -164,6 +166,7 @@ class self_compose_scraping_setting {
 
 class self_compose_scraping_result {
     constructor(result_name, result) {
+        super();
 
         // スクレイピング結果
         this.result = result;
