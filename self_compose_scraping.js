@@ -20,40 +20,82 @@ class self_compose_scraping {
 
         // スクレイピング子要素
         this.child_scraping = [];
+
+        // iframeで使用するid
+        this.iframe_id = 0;
     }
 
     // スクレイピングを実行
     do_scraping() {
+        // スクレイピング
+        var iframe = document.createElement('iframe');
+        iframe.id = String(this.iframe_id);
+        iframe.onload = this.finish_load_iframe;
+    }
+
+    // iframeのロードが終了したときに呼び出される
+    finish_load_iframe(){
         // スクレイピング設定を解析
         let this_setting = this.scraping_settings[0];
 
-        // スクレイピング
-        //
-        //
-        //
+        let elem = document.getElementById(String(this.iframe_id));
+        let html = elem.contentWindow.document.getElementsByTagName("html")[0].cloneNode(true);
+        let name_result = get_Elemet_by_id_and_class(html,this_setting.target_name_class,this_setting.target_name_id);
+        let target_result = get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
+        let final_name = '';
+        if(name_result.length != 0){
+            final_name = name_result[0];
+        }
+        for(let i=0;i<target_result.length;i++){
+            this.scraping_result.push(new self_compose_scraping_result(final_name,target_result[i]));
+        }
 
         // スクレイピング結果とスクレイピング設定から、子要素作成
         // または、結果を返す
         if (this.scraping_settings.length == 1) {
             this.delegate.finish_scraping(this.scraping_result);
         } else {
+            let this_scraping_result = this.scraping_result.concat();
+            this.scraping_result = [];
             this.child_result_count = 0;
-            this.child_result_max = this.scraping_result.length;
-            for (let i = 0; i < this.scraping_result.length; i++) {
-                let next_url = this.scraping_result[i].result;
+            this.child_result_max = this_scraping_result.length;
+            for (let i = 0; i < this_scraping_result.length; i++) {
+                let next_url = this_scraping_result[i].result;
                 let child_setting = this.scraping_settings.concat();
                 child_setting.shift();
                 child_setting[0].target_url = next_url;
-                let child_scr = new self_compose_scraping(child_setting,this);
-                child_scr.do_scraping();
+                let child_scr = new self_compose_scraping(child_setting, this);
                 this.child_scraping.push(child_scr);
+                child_scr.do_scraping();
             }
         }
     }
 
+    // idとクラス名を指定して要素を取得
+    get_Elemet_by_id_and_class(target_html,class_name,id_name){
+        let valid_class_name = class_name != null && class_name != '';
+        let valid_id_name = id_name != null && id_name != '';
+        let result = [];
+        if(valid_class_name && !valid_id_name){
+            result = target_html.getElementsByClassName(class_name);
+        }else if(!valid_class_name && valid_id_name){
+            result = [target_html.getElementById(id_name)];
+        }else if(valid_class_name && valid_id_name){
+            let sub_re = target_html.getElementById(id_name);
+            if(sub_re.className == class_name){
+                result = [sub_re];
+            }else{
+                result = [];
+            }
+        }else{
+            result = [];
+        }
+        return result;
+    }
+
     // スクレイピング終了を処理するクラス
     finish_scraping(result) {
-        for(let i=0;i<result.length;i++){
+        for (let i = 0; i < result.length; i++) {
             this.scraping_result.push(result[i]);
         }
         this.child_result_count += 1;
