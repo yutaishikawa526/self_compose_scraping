@@ -175,6 +175,7 @@ class self_compose_scraping_setting {
     }
 }
 
+// スクレイピング結果を格納
 class self_compose_scraping_result {
     constructor(result_name, result) {
 
@@ -185,3 +186,40 @@ class self_compose_scraping_result {
         this.result_name = result_name;
     }
 }
+
+// スクレイピングを行うエンジンクラス
+class mainEngine extends delegate_self_compose_scraping{
+    constructor(){
+        super();
+        document.head.innerHTML = '';
+        document.body.innerHTML = '';
+
+        let setting0 = new self_compose_scraping_setting(
+            'https://~~~',
+            'classname for target',
+            'id for target',
+            'href',
+            'classname for name',
+            'id for name',
+            '');
+
+        let setting = new self_compose_scraping_setting(
+            'https://~~~',
+            'classname for target',
+            'id for target',
+            'href',
+            'classname for name',
+            'id for name',
+            '');
+        let settings = [setting0,setting];
+        let scraping = new self_compose_scraping(settings,this);
+        scraping.do_scraping();
+    }
+
+    // スクレイピング終了を処理するクラス
+    finish_scraping(result) {
+        console.log(result);
+    }
+}
+
+let start = new mainEngine();
