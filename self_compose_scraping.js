@@ -51,9 +51,27 @@ class self_compose_scraping {
         let target_result = get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
         let final_name = '';
         if(name_result.length != 0){
-            final_name = name_result[0];
+            let attribute_name = this_setting.result_name_attr;
+            if(attribute_name == ''){
+                final_name = name_result[0].textContent;
+            }else{
+                final_name = name_result[0].getAttribute(attribute_name);
+            }
+            if(final_name == null){
+                final_name = '';
+            }
         }
         for(let i=0;i<target_result.length;i++){
+            let attribute_name = this_setting.result_attr;
+            let target_attribute = '';
+            if(attribute_name == ''){
+                target_attribute = target_result[i].textContent;
+            }else{
+                target_attribute = target_result[i].getAttribute(attribute_name);
+            }
+            if(target_attribute == null || target_attribute == ''){
+                continue;
+            }
             my_this.scraping_result.push(new self_compose_scraping_result(final_name,target_result[i]));
         }
 
