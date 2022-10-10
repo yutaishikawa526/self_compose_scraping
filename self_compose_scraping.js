@@ -85,7 +85,7 @@ class self_compose_scraping extends delegate_self_compose_scraping{
             if(target_attribute == null || target_attribute == ''){
                 continue;
             }
-            my_this.scraping_result.push(new self_compose_scraping_result(final_name,target_result[i]));
+            my_this.scraping_result.push(new self_compose_scraping_result(final_name,target_attribute));
         }
 
         // スクレイピング結果とスクレイピング設定から、子要素作成
