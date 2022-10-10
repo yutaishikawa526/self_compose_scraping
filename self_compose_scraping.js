@@ -29,6 +29,10 @@ class self_compose_scraping {
     do_scraping() {
         // スクレイピング
         var iframe = document.createElement('iframe');
+        do{
+            const RANDOM_MAX = 10000;
+            this.iframe_id = Math.floor(Math.random() * RANDOM_MAX);
+        }while(document.getElementById(String(this.iframe_id)) != null);
         iframe.id = String(this.iframe_id);
         iframe.onload = this.finish_load_iframe;
     }
