@@ -60,8 +60,8 @@ class self_compose_scraping extends delegate_self_compose_scraping{
 
         let elem = document.getElementById(String(my_this.iframe_id));
         let html = elem.contentWindow.document.getElementsByTagName("html")[0].cloneNode(true);
-        let name_result = this.get_Elemet_by_id_and_class(html,this_setting.target_name_class,this_setting.target_name_id);
-        let target_result = this.get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
+        let name_result = self_compose_scraping.get_Elemet_by_id_and_class(html,this_setting.target_name_class,this_setting.target_name_id);
+        let target_result = self_compose_scraping.get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
         let final_name = '';
         if(name_result.length != 0){
             let attribute_name = this_setting.result_name_attr;
@@ -110,7 +110,7 @@ class self_compose_scraping extends delegate_self_compose_scraping{
     }
 
     // idとクラス名を指定して要素を取得
-    get_Elemet_by_id_and_class(target_html,class_name,id_name){
+    static get_Elemet_by_id_and_class(target_html,class_name,id_name){
         let valid_class_name = class_name != null && class_name != '';
         let valid_id_name = id_name != null && id_name != '';
         let result = [];
