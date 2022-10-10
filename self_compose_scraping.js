@@ -6,7 +6,7 @@ class delegate_self_compose_scraping {
 }
 
 // 自身を配列として含む、スクレイピングを行うクラス
-class self_compose_scraping {
+class self_compose_scraping extends delegate_self_compose_scraping{
     constructor(scraping_settings, delegate) {
         super();
 
@@ -166,7 +166,6 @@ class self_compose_scraping_setting {
 
 class self_compose_scraping_result {
     constructor(result_name, result) {
-        super();
 
         // スクレイピング結果
         this.result = result;
