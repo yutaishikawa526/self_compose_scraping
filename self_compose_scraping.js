@@ -60,8 +60,8 @@ class self_compose_scraping extends delegate_self_compose_scraping{
 
         let elem = document.getElementById(String(my_this.iframe_id));
         let html = elem.contentWindow.document.getElementsByTagName("html")[0].cloneNode(true);
-        let name_result = get_Elemet_by_id_and_class(html,this_setting.target_name_class,this_setting.target_name_id);
-        let target_result = get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
+        let name_result = this.get_Elemet_by_id_and_class(html,this_setting.target_name_class,this_setting.target_name_id);
+        let target_result = this.get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
         let final_name = '';
         if(name_result.length != 0){
             let attribute_name = this_setting.result_name_attr;
