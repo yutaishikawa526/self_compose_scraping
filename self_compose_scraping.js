@@ -231,7 +231,7 @@ class mainEngine extends delegate_self_compose_scraping{
             setting_str += 'タイトルID:[' + targetSetting.target_name_id + ']\n';
             setting_str += 'タイトル取得属性:[' + targetSetting.result_name_attr + ']\n';
         }
-        result = window.confirm(
+        let result = window.confirm(
             setting_str + 'スクレイピングを開始しますか？'
         );
         if(result){
