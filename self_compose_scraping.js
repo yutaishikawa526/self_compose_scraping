@@ -151,9 +151,11 @@ class self_compose_scraping extends delegate_self_compose_scraping{
 
 // スクレイピング設定を保持
 class self_compose_scraping_setting {
-    constructor(target_url, target_class, target_id, result_attr, target_name_class, target_name_id, result_name_attr) {
+    constructor(target_url, target_class, target_id, result_attr, target_name_class, target_name_id, result_name_attr,is_same_delete) {
         // 対象URL
         this.target_url = target_url;
+        // 被っていたら共通化するか
+        this.is_same_delete = is_same_delete;
 
         // スクレイピング対象の設定
         // 対象クラス
@@ -208,6 +210,9 @@ class mainEngine extends delegate_self_compose_scraping{
             let targetNameIdName = window.prompt('タイトルに指定するターゲットのID名を設定してください。(未入力ならば未指定として扱う)', '');
             let targetNameAttribute = window.prompt('タイトルに指定するターゲットの対象属性を設定してください。(未入力ならばtextContentを取得)', '');
             
+            let targetSameDelete = window.prompt('同じ項目が設定されたら共通化するか。(未入力ならば共通化を実施。入力があれば未実施)', '');
+            let isSameDelete = targetSameDelete == '';
+
             settings.push(new self_compose_scraping_setting(
                 targetUrlInput,
                 targetClassName,
@@ -215,7 +220,8 @@ class mainEngine extends delegate_self_compose_scraping{
                 targetAttribute,
                 targetNameClassName,
                 targetNameIdName,
-                targetNameAttribute
+                targetNameAttribute,
+                isSameDelete
             ));
         }
         let setting_str = '';
