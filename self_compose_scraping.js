@@ -60,6 +60,7 @@ class self_compose_scraping extends delegate_self_compose_scraping{
         let html = document.getElementById(String(my_this.iframe_id)).contentWindow.document.getElementsByTagName("html")[0].cloneNode(true);
         let results = self_compose_scraping.get_scraping_results(html,this_setting);
         my_this.scraping_result.push(...results);
+        document.getElementById(String(my_this.iframe_id)).remove();
 
         // スクレイピング結果とスクレイピング設定から、子要素作成
         // または、結果を返す
