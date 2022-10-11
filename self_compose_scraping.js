@@ -194,31 +194,61 @@ class mainEngine extends delegate_self_compose_scraping{
         document.head.innerHTML = '';
         document.body.innerHTML = '';
 
-        let setting0 = new self_compose_scraping_setting(
-            'https://~~~',
-            'classname for target',
-            'id for target',
-            'href',
-            'classname for name',
-            'id for name',
-            '');
+        let settings = [];
+        let targetUrlInput = window.prompt('ターゲットとなる最初の階層のurlを設定してください。', '');
+        let targetHierarchy = window.prompt('最初のページから目的のページまでの階層を入力してください。', '');
+        targetHierarchy = parseInt(targetHierarchy, 10);
+        for(let i=0;i<targetHierarchy;i++){
+            alert(i + '番目の階層の設定を開始します。');
+            let targetClassName = window.prompt('スクレイピング対象のクラス名を設定してください。(未入力ならば未指定として扱う)', '');
+            let targetIdName = window.prompt('スクレイピング対象のID名を設定してください。(未入力ならば未指定として扱う)', '');
+            let targetAttribute = window.prompt('スクレイピング対象の対象属性を設定してください。(未入力ならばtextContentを取得)', '');
 
-        let setting = new self_compose_scraping_setting(
-            'https://~~~',
-            'classname for target',
-            'id for target',
-            'href',
-            'classname for name',
-            'id for name',
-            '');
-        let settings = [setting0,setting];
-        let scraping = new self_compose_scraping(settings,this);
-        scraping.do_scraping();
+            let targetNameClassName = window.prompt('タイトルに指定するターゲットのクラス名を設定してください。(未入力ならば未指定として扱う)', '');
+            let targetNameIdName = window.prompt('タイトルに指定するターゲットのID名を設定してください。(未入力ならば未指定として扱う)', '');
+            let targetNameAttribute = window.prompt('タイトルに指定するターゲットの対象属性を設定してください。(未入力ならばtextContentを取得)', '');
+            
+            settings.push(new self_compose_scraping_setting(
+                targetUrlInput,
+                targetClassName,
+                targetIdName,
+                targetAttribute,
+                targetNameClassName,
+                targetNameIdName,
+                targetNameAttribute
+            ));
+        }
+        let setting_str = '';
+        setting_str += '対象URL:' + targetUrlInput + '\n';
+        for(let i=0;i<settings.length;i++){
+            let targetSetting = settings[i];
+            setting_str += '第' + i + '階層\n';
+            setting_str += '対象クラス:[' + targetSetting.target_class + ']\n';
+            setting_str += '対象ID:[' + targetSetting.target_id + ']\n';
+            setting_str += '対象取得属性:[' + targetSetting.result_attr + ']\n';
+
+            setting_str += 'タイトルクラス:[' + targetSetting.target_name_class + ']\n';
+            setting_str += 'タイトルID:[' + targetSetting.target_name_id + ']\n';
+            setting_str += 'タイトル取得属性:[' + targetSetting.result_name_attr + ']\n';
+        }
+        let result = window.confirm(
+            setting_str + 'スクレイピングを開始しますか？'
+        );
+        if(result){
+            let scraping = new self_compose_scraping(settings,this);
+            scraping.do_scraping();
+        }
     }
 
     // スクレイピング終了を処理するクラス
     finish_scraping(result) {
-        console.log(result);
+        let jsonData = JSON.stringify(result);
+        let blob = new Blob([jsonData], {type: 'text/plain'});
+        let blobURL = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.download = 'scraping_result.json';
+        a.href = blobURL;
+        a.click();
     }
 }
 
