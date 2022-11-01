@@ -71,12 +71,23 @@ class self_compose_scraping extends delegate_self_compose_scraping{
         // スクレイピング結果とスクレイピング設定から、子要素作成
         // または、結果を返す
         if (this.scraping_settings.length == 1) {
+            if(this_setting.is_same_delete){
+                // 共通化処理
+                this.scraping_result.filter((value,index,self) => {return self.indexOf(value) === index});
+            }
             this.delegate.finish_scraping(this.scraping_result);
         } else {
             if(this_setting.is_same_delete){
-                // 共通内容を統一
-                let child_setting = this.scraping_settings.concat();
-                this.delegate.unify_scraping_result(this.scraping_result,child_setting);
+                if(this.is_top){
+                    // 共通化処理
+                    this.scraping_result.filter((value,index,self) => {return self.indexOf(value) === index});
+                    // 新しく子を作成する
+                    this.create_child_from_result_setting();
+                }else{
+                    // 共通内容を統一
+                    let child_setting = this.scraping_settings.concat();
+                    this.delegate.unify_scraping_result(this.scraping_result,child_setting);
+                }
             }else{
                 this.create_child_from_result_setting();
             }
