@@ -73,14 +73,14 @@ class self_compose_scraping extends delegate_self_compose_scraping{
         if (this.scraping_settings.length == 1) {
             if(this_setting.is_same_delete){
                 // 共通化処理
-                this.scraping_result.filter((value,index,self) => {return self.indexOf(value) === index});
+                this.remove_duplicate_values(true);
             }
             this.delegate.finish_scraping(this.scraping_result);
         } else {
             if(this_setting.is_same_delete){
                 if(this.is_top){
                     // 共通化処理
-                    this.scraping_result.filter((value,index,self) => {return self.indexOf(value) === index});
+                    this.remove_duplicate_values(false);
                     // 新しく子を作成する
                     this.create_child_from_result_setting();
                 }else{
@@ -108,6 +108,26 @@ class self_compose_scraping extends delegate_self_compose_scraping{
             let child_scr = new self_compose_scraping(child_setting, this);
             this.child_scraping.push(child_scr);
             child_scr.do_scraping();
+        }
+    }
+
+    // スクレイピング結果から重複を削除する
+    remove_duplicate_values(consider_result_name){
+        let buff_result = this.scraping_result.concat();
+        this.scraping_result = [];
+        for(let i=0;i<buff_result.length;i++){
+            let buff = buff_result[i];
+            let already = false;
+            for(let j=0;j<this.scraping_result.length;j++){
+                let res = this.scraping_result[j];
+                if(buff.result == res.result && (!consider_result_name || buff.result_name == res.result_name)){
+                    already = true;
+                    break;
+                }
+            }
+            if(!already){
+                this.scraping_result.push(buff);
+            }
         }
     }
 
@@ -198,7 +218,7 @@ class self_compose_scraping extends delegate_self_compose_scraping{
         if (this.child_result_max == this.child_result_count) {
             this.scraping_settings = next_setting;
             // 共通化処理
-            this.scraping_result.filter((value,index,self) => {return self.indexOf(value) === index});
+            this.remove_duplicate_values(false);
             // 新しく子を作成する
             this.create_child_from_result_setting();
         }
