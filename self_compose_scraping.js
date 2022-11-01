@@ -2,13 +2,19 @@
 // self_compose_scrapingのデリゲートクラス
 class delegate_self_compose_scraping {
     // スクレイピング終了を処理するクラス
-    finish_scraping(result) { }
+    finish_scraping(result) {}
+
+    // スクレイピングの共通化処理を行う
+    unify_scraping_result(result,next_setting){}
 }
 
 // 自身を配列として含む、スクレイピングを行うクラス
 class self_compose_scraping extends delegate_self_compose_scraping{
-    constructor(scraping_settings, delegate) {
+    constructor(scraping_settings,delegate,is_top = false) {
         super();
+
+        // 先頭のself_compose_scrapingであるか
+        this.is_top = is_top;
 
         // スクレイピング結果を保持
         this.scraping_result = [];
@@ -42,11 +48,11 @@ class self_compose_scraping extends delegate_self_compose_scraping{
             this.iframe_id = Math.floor(Math.random() * RANDOM_MAX);
         }while(document.getElementById(String(this.iframe_id)) != null);
         iframe.id = String(this.iframe_id);
-        let my_this = this;
+        let global_this = this;
         iframe.onload = function(){
-            self_compose_scraping.finish_load_iframe(my_this);
+            global_this.finish_load_iframe();
         };
-        let this_setting = my_this.scraping_settings[0];
+        let this_setting = this.scraping_settings[0];
         iframe.src = this_setting.target_url;
         iframe.width = 800;
         iframe.height = 500;
@@ -54,40 +60,51 @@ class self_compose_scraping extends delegate_self_compose_scraping{
     }
 
     // iframeのロードが終了したときに呼び出される
-    static finish_load_iframe(my_this){
+    finish_load_iframe(){
         // スクレイピングを実行
-        let this_setting = my_this.scraping_settings[0];
-        let html = document.getElementById(String(my_this.iframe_id)).contentWindow.document.getElementsByTagName("html")[0].cloneNode(true);
-        let results = self_compose_scraping.get_scraping_results(html,this_setting);
-        my_this.scraping_result.push(...results);
-        document.getElementById(String(my_this.iframe_id)).remove();
+        let this_setting = this.scraping_settings[0];
+        let html = document.getElementById(String(this.iframe_id)).contentWindow.document.getElementsByTagName("html")[0].cloneNode(true);
+        let results = this.get_scraping_results(html,this_setting);
+        this.scraping_result.push(...results);
+        document.getElementById(String(this.iframe_id)).remove();
 
         // スクレイピング結果とスクレイピング設定から、子要素作成
         // または、結果を返す
-        if (my_this.scraping_settings.length == 1) {
-            my_this.delegate.finish_scraping(my_this.scraping_result);
+        if (this.scraping_settings.length == 1) {
+            this.delegate.finish_scraping(this.scraping_result);
         } else {
-            let this_scraping_result = my_this.scraping_result.concat();
-            my_this.scraping_result = [];
-            my_this.child_result_count = 0;
-            my_this.child_result_max = this_scraping_result.length;
-            for (let i = 0; i < this_scraping_result.length; i++) {
-                let next_url = this_scraping_result[i].result;
-                let child_setting = my_this.scraping_settings.concat();
-                child_setting.shift();
-                child_setting[0].target_url = next_url;
-                let child_scr = new self_compose_scraping(child_setting, my_this);
-                my_this.child_scraping.push(child_scr);
-                child_scr.do_scraping();
+            if(this_setting.is_same_delete){
+                // 共通内容を統一
+                let child_setting = this.scraping_settings.concat();
+                this.delegate.unify_scraping_result(this.scraping_result,child_setting);
+            }else{
+                this.create_child_from_result_setting();
             }
         }
     }
 
+    // リザルトと設定から子を作成し、スクレイピングを継続する
+    create_child_from_result_setting(){
+        let this_scraping_result = this.scraping_result.concat();
+        this.scraping_result = [];
+        this.child_result_count = 0;
+        this.child_result_max = this_scraping_result.length;
+        for (let i = 0; i < this_scraping_result.length; i++) {
+            let next_url = this_scraping_result[i].result;
+            let child_setting = this.scraping_settings.concat();
+            child_setting.shift();
+            child_setting[0].target_url = next_url;
+            let child_scr = new self_compose_scraping(child_setting, this);
+            this.child_scraping.push(child_scr);
+            child_scr.do_scraping();
+        }
+    }
+
     // html要素から、設定に対応した結果を取得する
-    static get_scraping_results(html,this_setting){
+    get_scraping_results(html,this_setting){
         let results = [];
-        let name_result = self_compose_scraping.get_Elemet_by_id_and_class(html,this_setting.target_name_class,this_setting.target_name_id);
-        let target_result = self_compose_scraping.get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
+        let name_result = this.get_Elemet_by_id_and_class(html,this_setting.target_name_class,this_setting.target_name_id);
+        let target_result = this.get_Elemet_by_id_and_class(html,this_setting.target_class,this_setting.target_id);
         let final_name = '';
         if(name_result.length != 0){
             let attribute_name = this_setting.result_name_attr;
@@ -117,7 +134,7 @@ class self_compose_scraping extends delegate_self_compose_scraping{
     }
 
     // idとクラス名を指定して要素を取得
-    static get_Elemet_by_id_and_class(target_html,class_name,id_name){
+    get_Elemet_by_id_and_class(target_html,class_name,id_name){
         let valid_class_name = class_name != null && class_name != '';
         let valid_id_name = id_name != null && id_name != '';
         let result = [];
@@ -146,6 +163,33 @@ class self_compose_scraping extends delegate_self_compose_scraping{
         this.child_result_count += 1;
         if (this.child_result_max == this.child_result_count) {
             this.delegate.finish_scraping(this.scraping_result);
+        }
+    }
+
+    // スクレイピングの共通化処理を行う
+    unify_scraping_result(result,next_setting){
+        if(!this.is_top){
+            // 子の結果を回収
+            for (let i = 0; i < result.length; i++) {
+                this.scraping_result.push(result[i]);
+            }
+            this.child_result_count += 1;
+            if (this.child_result_max == this.child_result_count) {
+                this.delegate.unify_scraping_result(this.scraping_result,next_setting);
+            }
+            return;
+        }
+        // トップ階層なので、共通化処理を行う
+        for (let i = 0; i < result.length; i++) {
+            this.scraping_result.push(result[i]);
+        }
+        this.child_result_count += 1;
+        if (this.child_result_max == this.child_result_count) {
+            this.scraping_settings = next_setting;
+            // 共通化処理
+            this.scraping_result.filter((value,index,self) => {return self.indexOf(value) === index});
+            // 新しく子を作成する
+            this.create_child_from_result_setting();
         }
     }
 }
@@ -242,7 +286,7 @@ class mainEngine extends delegate_self_compose_scraping{
             setting_str + 'スクレイピングを開始しますか？'
         );
         if(result){
-            let scraping = new self_compose_scraping(settings,this);
+            let scraping = new self_compose_scraping(settings,this,true);
             scraping.do_scraping();
         }
     }
