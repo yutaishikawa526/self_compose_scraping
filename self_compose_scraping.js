@@ -41,6 +41,15 @@ class self_compose_scraping extends delegate_self_compose_scraping{
 
     // スクレイピングを実行
     do_scraping() {
+        let this_setting = this.scraping_settings[0];
+        if(this.is_top && this_setting.is_target_url_array){
+            let target_urls = this_setting.target_url;
+            for(let i=0;i<target_urls.length;i++){
+                this.scraping_result.push(new self_compose_scraping_result('',target_urls[i]));
+            }
+            this.create_child_from_result_setting(false);
+            return;
+        }
         // スクレイピング
         let iframe = document.createElement('iframe');
         do{
@@ -52,7 +61,6 @@ class self_compose_scraping extends delegate_self_compose_scraping{
         iframe.onload = function(){
             global_this.finish_load_iframe();
         };
-        let this_setting = this.scraping_settings[0];
         iframe.src = this_setting.target_url;
         iframe.width = 800;
         iframe.height = 500;
@@ -95,7 +103,7 @@ class self_compose_scraping extends delegate_self_compose_scraping{
     }
 
     // リザルトと設定から子を作成し、スクレイピングを継続する
-    create_child_from_result_setting(){
+    create_child_from_result_setting(need_shift = true){
         let this_scraping_result = this.scraping_result.concat();
         this.scraping_result = [];
         this.child_result_count = 0;
@@ -103,7 +111,9 @@ class self_compose_scraping extends delegate_self_compose_scraping{
         for (let i = 0; i < this_scraping_result.length; i++) {
             let next_url = this_scraping_result[i].result;
             let child_setting = this.scraping_settings.concat();
-            child_setting.shift();
+            if(need_shift){
+                child_setting.shift();
+            }
             child_setting[0].target_url = next_url;
             let child_scr = new self_compose_scraping(child_setting, this);
             this.child_scraping.push(child_scr);
@@ -227,7 +237,10 @@ class self_compose_scraping extends delegate_self_compose_scraping{
 
 // スクレイピング設定を保持
 class self_compose_scraping_setting {
-    constructor(target_url, target_class, target_id, result_attr, target_name_class, target_name_id, result_name_attr,is_same_delete) {
+    constructor(target_url, target_class, target_id, result_attr, target_name_class, target_name_id, result_name_attr,is_same_delete,is_target_url_array = false) {
+        // 対象URLは配列かどうか
+        this.is_target_url_array = is_target_url_array;
+
         // 対象URL
         this.target_url = target_url;
         // 被っていたら共通化するか
@@ -273,11 +286,16 @@ class mainEngine extends delegate_self_compose_scraping{
         document.body.innerHTML = '';
 
         let settings = [];
-        let targetUrlInput = window.prompt('ターゲットとなる最初の階層のurlを設定してください。', '');
+        let target_url_count = window.prompt('ターゲットとなる最初の階層のurlの数を設定してください。', 1);
+        let targetUrlInput = [];
+        for(let i=0;i<target_url_count;i++){
+            let urlInput = window.prompt('ターゲットとなる最初の階層の' + (1 + i) + '番目urlを設定してください。', '');
+            targetUrlInput.push(urlInput);
+        }
         let targetHierarchy = window.prompt('最初のページから目的のページまでの階層を入力してください。', '');
         targetHierarchy = parseInt(targetHierarchy, 10);
         for(let i=0;i<targetHierarchy;i++){
-            alert(i + '番目の階層の設定を開始します。');
+            alert((1 + i) + '番目の階層の設定を開始します。');
             let targetClassName = window.prompt('スクレイピング対象のクラス名を設定してください。(未入力ならば未指定として扱う)', '');
             let targetIdName = window.prompt('スクレイピング対象のID名を設定してください。(未入力ならば未指定として扱う)', '');
             let targetAttribute = window.prompt('スクレイピング対象の対象属性を設定してください。(未入力ならばtextContentを取得)', '');
@@ -289,15 +307,22 @@ class mainEngine extends delegate_self_compose_scraping{
             let targetSameDelete = window.prompt('同じ項目が設定されたら共通化するか。(未入力ならば共通化を実施。入力があれば未実施)', '');
             let isSameDelete = targetSameDelete == '';
 
+            let targetUrl = '';
+            let targetUrlArray = false;
+            if(i == 0){
+                targetUrl = targetUrlInput;
+                targetUrlArray = true;
+            }
             settings.push(new self_compose_scraping_setting(
-                targetUrlInput,
+                targetUrl,
                 targetClassName,
                 targetIdName,
                 targetAttribute,
                 targetNameClassName,
                 targetNameIdName,
                 targetNameAttribute,
-                isSameDelete
+                isSameDelete,
+                targetUrlArray
             ));
         }
         let setting_str = '';
